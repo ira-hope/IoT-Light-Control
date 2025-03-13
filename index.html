@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Light Control</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            width: 300px;
+        }
+        button {
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
+        #onButton {
+            background-color: #4CAF50; 
+        }
+        #offButton {
+            background-color: #f44336; 
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #status {
+            font-size: 18px;
+            color: #555;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #status.success {
+            color: #4CAF50;
+        }
+        #status.error {
+            color: #f44336;
+        }
+    </style>
+    <script>
+        const broker = "wss://test.mosquitto.org:8081/mqtt"; 
+        const topic = "/student_group/light_control";
+        const client = mqtt.connect(broker);
+
+        client.on("connect", () => {
+            console.log("Connected to MQTT broker");
+        });
+
+        function sendMessage(command) {
+            client.publish(topic, command);
+            const statusElement = document.getElementById("status");
+            document.getElementById("status").innerText = `Last Command Sent: ${command}`;
+
+            const onButton = document.getElementById("onButton");
+            const offButton = document.getElementById("offButton");
+
+            if (command === 'ON') {
+                statusElement.classList.add('success');
+                statusElement.classList.remove('error');
+                onButton.classList.add('disabled');
+                onButton.disabled = true;
+                offButton.classList.remove('disabled');
+                offButton.disabled = false;
+            } else if (command === 'OFF') {
+                statusElement.classList.add('error');
+                statusElement.classList.remove('success');
+                offButton.classList.add('disabled');
+                offButton.disabled = true;
+                onButton.classList.remove('disabled');
+                onButton.disabled = false;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>IoT Light Control</h2>
+        <button id="onButton" onclick="sendMessage('ON')">Turn ON</button>
+        <button id="offButton" onclick="sendMessage('OFF')">Turn OFF</button>
+        <p id="status">Last Command Sent: None</p>
+    </div>
+</body>
+</html>
